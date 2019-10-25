@@ -1,0 +1,111 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/ractive"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>"Scrabble"</title>
+</head>
+<body>
+
+  <!-- html section -->
+  <div id="target"></div>
+  <script id="template" type="text/ractive">
+
+    <div class="content-section">
+        <div class = "dialog">
+            <div class="form-group">
+                <!-- use sanitize input method from before, on the input...-->
+                <input type="text" class="form-control" placeholder="Type a scrabble word here." id="wordInput" onkeypress="return sanitizeInput(event)">
+                <button class="btn form-control btn-primary" onclick="displayScore(document.getElementById('wordInput').value)">Click here to calculate your score</button>
+                <textarea id="result" class='form-control' placeholder="Result:" disabled></textarea>
+                <div>
+                    {{#each displayTile list: i}}
+                    {{>tile}}
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partial (HTML template) for Scrabble Tiles-->
+    {{#partial tile}}
+        <div class="scrabbleTile">
+            {{displayTile[i]}} <span style="font-size: 13;">{{scoreOfTile[i]}}</span>
+        </div>
+    {{/partial}}
+    </script>
+
+<!-- Javascript section -->
+<script>
+
+/*------------------------------
+    Display Score
+------------------------------*/
+
+function displayScore(word){
+    word = word.toUpperCase();
+    document.getElementById('wordInput').value = document.getElementById('wordInput').value.toUpperCase();
+
+    let wordArray = word.split("");
+    let answer = 0;
+    let tileValue = [];
+
+    wordArray.reduce((acc,curr,idx) => {
+        let letterArray = ['A','E','I','O','U','L','N','R','S','T','D','G','B','C','M','P','F','H','V','W','Y','K','J','X','Q','Z'];
+        let scoreArray = [1,1,1,1,1,1,1,1,1,1,2,2,3,3,3,3,4,4,4,4,4,5,8,8,10,10];
+
+        //Add each leter to calculate the score
+        for(let x in letterArray){
+            if(wordArray[idx] == letterArray[x]){
+                answer += scoreArray[x];
+                tileValue.push(scoreArray[x]);
+            }
+        }
+
+        return acc;
+        }, wordArray);
+
+        //Display the tile number value
+        ractive.set('displayTile',wordArray);
+        //Display the tile number value
+        ractive.set('scoreOfTile', tileValue);
+
+        document.getElementById('result').value = answer;
+}
+
+/*------------------------------
+    Sanitize Input
+------------------------------*/
+
+function sanitizeInput(e){
+    let x=e.which||e.keycode;
+    if((x>=65 && x<=90) || (x>=97 && x<=122)){
+        let scrabbleWord = ractive.get("scrabbleWord"); 
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+/*------------------------------
+    Ractive Object
+------------------------------*/
+
+let ractive = new Ractive({
+    target: "#target",
+    template: "#template",
+    data: {
+        newLetter: '',
+        scrabbleWord: '',
+        displayTile: [],
+        scoreOfTile: []
+    }
+});
+
+</script>
+
+</body>
+</html>
